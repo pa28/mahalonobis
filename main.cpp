@@ -45,24 +45,8 @@ int main() {
               << Si << '\n'
               << S * Si << '\n';
 
-/*
-    auto b = one * A / 5;
-    auto a = A - b;
-    matrix u{b[0]};
-    std::cout << a << '\n'
-              << A.normalize_data() << '\n'
-              << A.mean_data() << '\n';
-
-    auto S = A.normalize_data().covariance();
-    auto Si = S.inverse();
-
-    std::cout << S << '\n'
-              << Si << '\n'
-              << Si * S << '\n';
-
     for ( auto const &d : A)
-        std::cout << Si.mahlaonabis(d - A[2]) << '\n';
-*/
+        std::cout << Si.mahalanobis(d - A[2]) << '\n';
 
     return 0;
 }

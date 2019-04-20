@@ -143,26 +143,60 @@ namespace mahalonobis {
                 data[idx] = vector<T>(cols);
         }
 
+        /**
+         * @brief Begin iterator.
+         */
         iterator begin() { return data; }
 
+        /**
+         * @brief End iterator.
+         * @return
+         */
         iterator end() { return data + rows; }
 
+        /**
+         * @brief Constant begin iterator.
+         */
         const iterator begin() const { return data; }
 
+        /**
+         * @brief Constant end iterator.
+         */
         const iterator end() const { return data + rows; }
 
+        /**
+         * @brief Constant cbegin iterator.
+         */
         const_iterator cbegin() const { return data; }
 
+        /**
+         * @brief Constant cend iterator.
+         */
         const_iterator cend() const { return data + rows; }
 
+        /**
+         * @brief Indexing operator, returns a selected row.
+         * @param idx The index of the row requested
+         * @return A vector object containing the requested row.
+         */
         vector<T> &operator[](size_type idx) {
             return data[idx];
         }
 
+        /**
+         * @brief Constant indexing operator, returns a selected row.
+         * @param idx The index of the row requested
+         * @return A constant vector object containing the requested row.
+         */
         const vector<T> &operator[](size_type idx) const {
             return data[idx];
         }
 
+        /**
+         * @brief Return the result of multiplying this matix by m.
+         * @param m the multiplier.
+         * @return The matrix product.
+         */
         matrix operator*(matrix const &m) const {
             if (data[0].size != m.rows)
                 throw std::logic_error("Matrix size error for multiplication.");
@@ -179,6 +213,34 @@ namespace mahalonobis {
             return result;
         }
 
+        vector<T> operator*(vector<T> const &v) const {
+            if (data[0].size != v.size)
+                throw std::logic_error("Matrix/vector size error for multiplication.");
+
+            vector<T> result{rows};
+            for (size_type i = 0; i < rows; ++i)
+                result[i] = data[i] * v;
+            return result;
+        }
+
+        /**
+         * @brief Multiply this matrix by a scalar.
+         * @param t the scalar multiplier.
+         * @return the product.
+         */
+        matrix operator*(T t) const {
+            matrix result(rows, data[0].size);
+            for (size_type i = 0; i < rows; ++i)
+                for (size_type j = 0; j < data[i].size; ++j)
+                    result[i][j] = data[i][j] * t;
+            return result;
+        }
+
+        /**
+         * @brief Divide this matrix by a scalar.
+         * @param t the scalar divisor.
+         * @return the result.
+         */
         matrix operator/(T t) const {
             matrix result(rows, data[0].size);
             for (size_type i = 0; i < rows; ++i)
@@ -187,6 +249,12 @@ namespace mahalonobis {
             return result;
         }
 
+        /**
+         * @brief Compute the mean of the data.
+         * @return A vector mean
+         * @details Treats the matrix as a set of multivariate values, one per row of the matrix, returns a
+         * vector with the mean value.
+         */
         vector<T> mean_data() const {
             vector<T> result(data[0].size);
 
@@ -202,6 +270,12 @@ namespace mahalonobis {
             return result;
         }
 
+        /**
+         * @brief Normalize the matrix
+         * @return the normalized data
+         * @details Treats the matrix as a set of multivariate values, one per row of the matrix, returns a
+         * matrix with the mean subtracted from each value.
+         */
         matrix normalize_data() const {
             auto u = mean_data();
             matrix result(rows, data[0].size);
@@ -212,6 +286,9 @@ namespace mahalonobis {
             return result;
         }
 
+        /**
+         * @brief Transpose the matrix.
+         */
         matrix operator~() const {
             matrix result(data[0].size, rows);
             for (size_type i = 0; i < rows; ++i)
@@ -220,6 +297,10 @@ namespace mahalonobis {
             return result;
         }
 
+        /**
+         * @brief Compute the covariance matrix of this matrix.
+         * @return
+         */
         matrix covariance() const {
             auto a = normalize_data();
             auto r = (~a * a) / rows;
@@ -227,7 +308,7 @@ namespace mahalonobis {
         }
 
         // Adapted from https://www.geeksforgeeks.org/adjoint-inverse-matrix/
-        // Function to get cofactor of A[p][q] in temp[][]. n is current
+        // Function to return the cofactor of A[p][q]. n is current effective
         // dimension of A[][]
         matrix getCofactor(size_type p, size_type q, size_type n) {
             size_type i = 0, j = 0;
@@ -279,7 +360,7 @@ namespace mahalonobis {
             return D;
         }
 
-        // Function to get adjoint of A[N][N] in adj[N][N].
+        // Function to return adjoint of A[N][N].
         matrix adjoint() {
             matrix adj{rows, rows};
             if (rows == 1) {
@@ -306,7 +387,7 @@ namespace mahalonobis {
             return adj;
         }
 
-        // Function to calculate and store inverse, returns false if
+        // Function to calculate and return the inverse, returns false if
         // matrix is singular
         matrix inverse() {
             // Find determinant of this
@@ -326,8 +407,29 @@ namespace mahalonobis {
                 ostream << v << '\n';
             return ostream;
         }
+
+        /**
+         * @brief Compute the mahalanobis distance for vector delta
+         * @param delta
+         * @return The distance
+         * @details Delta can be the result of the difference between two multivariate values,
+         * or between a multivariate value and the mean value.
+         */
+        T mahalanobis(vector<T> const &delta) const {
+            T result;
+            matrix matrix_delta{delta};
+            result = (matrix_delta * operator*(~matrix_delta))[0][0];
+            return result;
+        }
     };
 
+    /**
+     * @brief Allow the use of the comutative property of multiplication.
+     * @tparam T
+     * @param t a scalar multiplier
+     * @param m a matrix
+     * @return the result of m * t;
+     */
     template<typename T>
     matrix<T> operator*(T t, matrix<T> const &m) {
         return m.operator*(t);
