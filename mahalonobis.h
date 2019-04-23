@@ -30,6 +30,16 @@ namespace mahalonobis {
 
         vector() = default;
 
+        vector(vector const &other) = default;
+
+        vector(vector &&other) noexcept = default;
+
+        vector& operator=(vector const &other) = default;
+
+        vector& operator=(vector &&other) noexcept = default;
+
+        ~vector() = default;
+
         explicit vector(size_type n)
                 : size{n},
                   data{new T[n]} {
@@ -129,6 +139,16 @@ namespace mahalonobis {
     public:
 
         matrix() = default;
+        
+        matrix(matrix const &other) = default;
+
+        matrix(matrix &&other) noexcept = default;
+
+        matrix& operator=(matrix const &other) = default;
+
+        matrix& operator=(matrix &&other) noexcept = default;
+
+        ~matrix() = default;
 
         matrix(std::initializer_list<vector<T>> initializerList)
                 : rows{initializerList.size()},
