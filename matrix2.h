@@ -51,7 +51,7 @@ namespace matrix_math {
             other.size = 0;
         }
 
-        explicit vector(std::initializer_list<T> initializerList)
+        vector(std::initializer_list<T> initializerList)
                 : size{initializerList.size()} {
             data = new T[initializerList.size()];
             std::copy(initializerList.begin(), initializerList.end(), begin());
@@ -63,7 +63,7 @@ namespace matrix_math {
                 size = other.size;
                 data = new T[size];
             }
-            memcpy(data, other.data, size);
+            memcpy(data, other.data, size * sizeof(T));
             return *this;
         }
 
@@ -169,6 +169,16 @@ namespace matrix_math {
             delete[] data;
         }
 
+        matrix(std::initializer_list<vector<T>> initializerList)
+                : rows{initializerList.size()} {
+            data = new vector<T>*[initializerList.size()];
+            auto il = initializerList.begin();
+            for (size_t idx = 0; idx < rows; ++idx, ++il) {
+                data[idx] = new vector<T>(il->size);
+                *data[idx] = *il;
+            }
+        }
+
         iterator begin() { return iterator(*this); }
 
         iterator end() { return iterator(*this,rows); }
@@ -180,6 +190,10 @@ namespace matrix_math {
         const iterator cbegin() const { return iterator(const_cast<matrix&>(*this)); }
 
         const iterator cend() const { return iterator(const_cast<matrix&>(*this),rows); }
+
+        vector<T>&operator[](size_t idx) { return *data[idx]; }
+
+        const vector<T>&operator[](size_t idx) const { return *data[idx]; }
 
         std::ostream &print_on(std::ostream &ostream) const {
             for (auto idx = begin(); idx != end(); ++idx)
